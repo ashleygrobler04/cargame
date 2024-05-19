@@ -1,0 +1,3 @@
+#include "includes/sound_pool/sound_pool.ngt"
+sound_pool p();
+string crash_sound="glassBrake.wav";

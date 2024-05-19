@@ -1,0 +1,96 @@
+#include "car.ngt"
+#include "cars.ngt"
+#include "includes/dialog/dlg.ngt"
+
+void main() {
+    show_game_window("Car game");
+    timer spawn_timer;
+    int spawn_time=random(1000,10000);
+    bool tire_flag=false; //keep track of wether or not we want to play the tire sound
+    car c;
+    int max_left_range=-3;
+    int max_right_range=3;
+    int score=0; //score will be calculated when you pass A car successfully
+    sound crash_sound;
+    sound tire_sound;
+    tire_sound.load("sounds/tire.ogg");
+    tire_sound.volume=-10;
+    crash_sound.load("sounds/glassBrake.wav");
+    while (true) {
+        update_game_window();
+        c.loop();
+        p.update_listener_2d(c.x,c.y);
+        for (int i=0; i<cars.length(); i++) {
+            cars[i].loop();
+            int distance=c.y-cars[i].y;
+            if (distance>20) {
+                p.destroy_sound(cars[i].snd);
+                cars[i].should_remove=true;
+                score+=1;
+            }
+            //play the crash sound
+            if (cars[i].direction=="left" and c.x<=0 and distance>=4) {
+                p.destroy_all();
+                crash_sound.play();
+                dlg("Game over , this is the end of your drive. You have A final score of "+score);
+                exit();
+            }
+            else if (cars[i].direction=="right" and c.x>=0 and distance>=4) {
+                p.destroy_all();
+                crash_sound.play();
+                dlg("Game over , this is the end of your drive. You have A final score of "+score);
+                exit();
+            }
+            if (cars[i].should_remove==true) {
+                cars.remove_at(i);
+            }
+        }
+        if (spawn_timer.elapsed_millis>spawn_time) {
+            spawn_timer.restart();
+            int spawn_type=random(0,1);
+            if (spawn_type==0) {
+                spawn_car("left",random(c.y+30,c.y+50));
+                spawn_time=random(3000,15000);
+            }
+            else if (spawn_type==1) {
+                spawn_car("right",random(c.y+30,c.y+50));
+                spawn_time=random(3000,15000);
+            }
+        }
+        if (key_pressed(SDLK_ESCAPE)) {
+            exit();
+        }
+        if (key_down(SDLK_LEFT) and c.x>max_left_range and c.turn_left==false and c.driving==true) {
+            c.turn_left=true;
+            if (tire_flag==false) {
+                tire_sound.stop();
+                tire_sound.play();
+                tire_flag=true;
+            }
+        }
+        else {
+            c.turn_left=false;
+        }
+        if (key_down(SDLK_RIGHT) and c.x<max_right_range and c.turn_right==false and c.driving==true) {
+            c.turn_right=true;
+            if (tire_flag==false) {
+                tire_sound.stop();
+                tire_sound.play();
+                tire_flag=true;
+            }
+        }
+        else {
+            c.turn_right=false;
+        }
+        if (key_pressed(SDLK_UP) and c.driving==false) {
+            c.driving=true;
+        }
+        if (key_pressed(SDLK_s)) {
+            speak("Score: "+score);
+        }
+        if (c.x==0 and tire_flag==true) {
+            tire_flag=false;
+            tire_sound.stop();
+        }
+    }
+}

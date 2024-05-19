@@ -1,0 +1,64 @@
+#include "globals.ngt"
+
+class car {
+    int x;
+    int y;
+    int pitch;
+    int snd = p.play_extended_2d("sounds/car.wav", 0,0,x,y,0,0,0,0,true,0,0,0,pitch);
+    int turn_time;
+    int excel; //speed up the car
+    int speed;
+    bool turn_left;
+    bool turn_right;
+    bool driving;
+    timer turn_timer;
+    timer drive_timer;
+
+    car() {
+        x = 0;
+        y = 0;
+        turn_time = 150;
+        turn_left = false;
+        turn_right = false;
+        driving=false;
+        excel=70;
+        speed=0;
+        pitch=100;
+    }
+
+    void loop() {
+        p.update_sound_2d(snd,x,y);
+        p.update_sound_start_values(snd,0,0,pitch);
+        if (turn_left and  turn_timer.elapsed_millis >= turn_time) {
+            turn_timer.restart();
+            x -= 1;
+        }
+        else if (turn_right and turn_timer.elapsed_millis >= turn_time) {
+            turn_timer.restart();
+            x += 1;
+        }
+        if (turn_left==false and turn_right == false and turn_timer.elapsed_millis>turn_time) {
+            turn_timer.restart();
+            if (x>0) {
+                x-=1;
+            }
+            if (x<0) {
+                x+=1;
+            }
+        }
+        if (driving==true) {
+            if (drive_timer.elapsed_millis>excel ) {
+                drive_timer.restart();
+                speed+=1;
+                pitch+=2;
+                y+=speed;
+            }
+            if (speed>2) {
+                speed=2;
+            }
+            if (pitch>150) {
+                pitch=150;
+            }
+        }
+    }
+}

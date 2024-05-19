@@ -1,0 +1,43 @@
+#include "globals.ngt"
+
+//I didn't know what to call this, but they are the vehicles you need to pass.
+class vehicle {
+    string direction; //what direction do we spawn from?
+    int x;
+    int y;
+    int pitch;
+    int snd=p.play_extended_2d("sounds/virus.wav",0,0,x,y,0,0,0,0,true,0,0,0,pitch);
+    int movetime; //do this differently cause there is another var already declared.
+    int movement_units; //move the car by the movement units
+    timer move_timer; //to make the car move passed us
+    bool should_remove;
+    vehicle(string dir,int vy) {
+        direction=dir;
+        if (direction=="left") {
+            x=-3;
+        }
+        else if (direction=="right") {
+            x=3;
+        }
+        else {
+            alert("Error", "Direction not supported.");
+        }
+        movetime=random(80,5000);
+        y=vy;
+        should_remove=false;
+        movement_units=random(1,3);
+    }
+
+    void loop() {
+        p.update_sound_2d(snd,x,y);
+        if (move_timer.elapsed_millis>=movetime) {
+            move_timer.restart();
+            y-=movement_units;
+        }
+    }
+}
+
+vehicle@[]cars;
+void spawn_car(string d, int y) {
+    cars.insert_last(vehicle(d,y));
+}
